@@ -3,31 +3,38 @@ import time
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from utils.app_style import ICO, MAIN_STYLE, WINDOW_STYLE_ID
-from ui.manufacture import ManufactureWindow
-from ui.window2 import Window2
+from utils.app_style import ICO, WINDOW_STYLE_ID
+from ui.product import ProductWindow
 
 APP_NAME = 'Салон красоты'
 
 
 class MainWindow(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent)
         self.initUI()
 
     def initUI(self):
-        # product btn
+        # style
+        self.setObjectName(WINDOW_STYLE_ID)
+        style = open('theme/style.css', 'r')
+        style = style.read()
+        self.setStyleSheet(style)
+        # product_btn
         self.product_btn = QtWidgets.QPushButton('Товары')
         self.product_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.product_btn.clicked.connect(self.click1)
+        # quit_btn
+        self.quit_btn = QtWidgets.QPushButton('Выйти')
+        self.quit_btn.clicked.connect(app.quit)
         # logo
         self.logo = QtWidgets.QLabel()
         self.pixam = QtGui.QPixmap(ICO)
         self.logo.setPixmap(self.pixam)
 
-        self.logo.setAlignment(QtCore.Qt.AlignRight)
+
         self.logo.setScaledContents(True)
-        self.logo.setFixedSize(180,180)
+        self.logo.setFixedSize(180, 180)
         # logo_wrapper
         self.logo_wrapper = QtWidgets.QHBoxLayout()
         self.logo_wrapper.addWidget(self.logo)
@@ -35,9 +42,8 @@ class MainWindow(QtWidgets.QWidget):
         self.vbox = QtWidgets.QVBoxLayout()
         self.vbox.addLayout(self.logo_wrapper)
         self.vbox.addWidget(self.product_btn)
+        self.vbox.addWidget(self.quit_btn)
         # window
-        self.setObjectName(WINDOW_STYLE_ID)
-        self.setStyleSheet(MAIN_STYLE)
         self.setLayout(self.vbox)
 
         self.resize(500, 500)
@@ -46,9 +52,8 @@ class MainWindow(QtWidgets.QWidget):
         self.setWindowTitle(APP_NAME)
         self.setWindowIcon(QtGui.QIcon(ICO))
 
+        self.product_window = ProductWindow(self)
 
-        # self.new_window = Window2(self)
-        self.manufacture_window = ManufactureWindow(self)
     def load_data(self, sp):
         for i in range(1, 11):
             time.sleep(0.2)
@@ -56,7 +61,7 @@ class MainWindow(QtWidgets.QWidget):
                            QtCore.Qt.black)
 
     def click1(self):
-        self.manufacture_window.show()
+        self.product_window.show()
 
 
 if __name__ == '__main__':

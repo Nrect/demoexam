@@ -1,5 +1,6 @@
 from PyQt5 import QtSql
 
+
 class MySqlConnection():
     def __init__(self, server, database, user='', password='', message=False):
         self.__SERVER_NAME = server
@@ -25,3 +26,5 @@ class MySqlConnection():
             if self.__message:
                 print(db.lastError().text())
             return False
+
+
