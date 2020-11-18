@@ -94,7 +94,7 @@ class ElementCard(QWidget):
 
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.showimage(0)
-        self.show()
+        # self.show()
 
     def showimage(self, imagenumber):
         directory = "C:/MyProgramms/1Main/Projects/Python/demoexam/Товары салона красоты"
@@ -136,6 +136,7 @@ class ElementCard(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = ElementCard('Антивозрастная коллекция Освежающий тоник Цветочный', '123', '342')
+    ex.show()
     print(type(ElementCard))
     print(type(QWidget))
     sys.exit(app.exec_())
