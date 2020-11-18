@@ -1,8 +1,4 @@
-import envv
-SERVER_NAME = envv.server_name
-DATABASE_NAME = envv.database_name
-USER_NAME = envv.user_name
-USER_PASSWORD = envv.user_password
+APP_NAME = 'Салон красоты'
 
 TABLE_MANUFACTURE = 'Manufacturer'
 TABLE_PRODUCT = 'Product'

@@ -1,50 +1,42 @@
 import pyodbc
-from PyQt5 import QtCore, QtWidgets, QtSql, QtGui
+
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QVBoxLayout, QScrollArea, QWidget, QGridLayout, QPushButton
 
-from utils.consts import TABLE_PRODUCT
-from utils.connection_string import connection_string
 from ui.product_card import ElementCard
-from utils.app_style import ICO, WINDOW_STYLE_ID
+
 from utils.consts import connection_string
-import sys
+from utils.helpers import set_window_style
 
 
 class ProductWindow(QWidget):
     def __init__(self, parent=None):
         super(ProductWindow, self).__init__(parent, QtCore.Qt.Window)
-        self.initUI()
+        self.setWindowModality(QtCore.Qt.WindowModality(2))
+        self.init_ui()
+        set_window_style(self)
 
-    def initUI(self):
-        self.setObjectName(WINDOW_STYLE_ID)
-        style = open('theme/style.css', 'r')
-        style = style.read()
-        self.setStyleSheet(style)
-
-        self.vbox = QVBoxLayout()
-
-        self.showBtn = QPushButton('Цена по убываюнию')
-        self.showBtn.clicked.connect(self.show_product)
-
-        self.scrollArea = QScrollArea()
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollAreaWidgetContents = QWidget()
-
-        self.layout = QGridLayout(self.scrollAreaWidgetContents)
-        self.layout.setContentsMargins(10, 10, 10, 10)
+    def init_ui(self):
+        vbox = QVBoxLayout()
+        show_btn = QPushButton('Цена по убываюнию')
+        show_btn.clicked.connect(self.show_product)
+        # Скролл
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll__area_widget_contents = QWidget()
+        # Контейнер карточек
+        self.card_layout = QGridLayout(scroll__area_widget_contents)
+        self.card_layout.setContentsMargins(10, 10, 10, 10)
         self.show_product_cards('select * from Product')
-
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-
+        scroll_area.setWidget(scroll__area_widget_contents)
         # Добавление виджетов
-        self.vbox.addWidget(self.showBtn)
-
-        self.vbox.addWidget(self.scrollArea)
-
+        vbox.addWidget(show_btn)
+        vbox.addWidget(scroll_area)
+        # Окно
         self.setMinimumSize(1300, 700)
-        self.setLayout(self.vbox)
+        self.setLayout(vbox)
 
-    def show_product_cards(self,sql_query):
+    def show_product_cards(self, sql_query):
 
         row = 0
         column = 0
@@ -63,11 +55,12 @@ class ProductWindow(QWidget):
             card = ElementCard(product[0], str(int(product[1])) + ' руб.',
                                'Активно' if product[4] else 'Не активен')
             column += 1
-            self.layout.addWidget(card, row, column)
+            self.card_layout.addWidget(card, row, column)
 
     def show_product(self):
         self.show_product_cards('select * from Product order by -Cost')
 
+    # ? мб пригодится
     def remove_items(self):
         elements = self.layout.count()
         for i in range(elements - 1, -1, -1):
@@ -77,10 +70,3 @@ class ProductWindow(QWidget):
                 self.layout.removeWidget(w)
                 w.setParent(None)
                 w.deleteLater()
-
-
-if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    main = ProductWindow()
-    main.show()
-    sys.exit(app.exec_())

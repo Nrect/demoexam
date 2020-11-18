@@ -1,42 +1,27 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QFrame
+import os
+
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QFrame
 from PyQt5.QtGui import QPixmap, QFont, QPainter, QPen
 from PyQt5 import QtCore
-import os
+
+from utils.app_style import RADIO_STYLE
 
 
 class ElementCard(QWidget):
     def __init__(self, title, cost, is_active):
         super().__init__()
-        self.imagenumber = 0
+        self.image_number = 0
 
         self.title = title
         self.cost = cost
         self.is_active = is_active
 
-        self.initUI()
+        self.init_ui()
         self.label.setMouseTracking(True)
         self.frame_color = QtCore.Qt.darkGray
+        self.setStyleSheet(RADIO_STYLE)
 
-    def initUI(self):
-        self.setStyleSheet('''
-           QRadioButton::indicator {
-               width:10px;
-               height:10px;
-               border: 1 px solid red;
-               border-radius: 7px;
-           }
-
-           QRadioButton::indicator:checked {
-               background-color:blue;
-               border:2px solid blue;     
-           }
-
-           QRadioButton::indicator:unchecked {
-               background-color:gray; 
-               border: 2px solid gray; 
-           }''')
-
+    def init_ui(self):
         layout = QVBoxLayout()
         hbox = QHBoxLayout()
         hbox.setAlignment(QtCore.Qt.AlignHCenter)
@@ -94,10 +79,9 @@ class ElementCard(QWidget):
 
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.showimage(0)
-        # self.show()
 
     def showimage(self, imagenumber):
-        directory = "C:/MyProgramms/1Main/Projects/Python/demoexam/Товары салона красоты"
+        directory = "./Товары салона красоты"
         self.imagelist = os.listdir(directory)[:4]
         pixmap = QPixmap(directory + '\\' + self.imagelist[imagenumber])
 
@@ -122,7 +106,6 @@ class ElementCard(QWidget):
         self.showimage(self.rb_group.checkedId())
 
     # Цвет рамки заднего фона карточки
-
     def paintEvent(self, event):
         painter = QPainter(self)
         if self.is_active.text() == 'Не активен':
@@ -131,12 +114,3 @@ class ElementCard(QWidget):
             painter.setBrush(QtCore.Qt.white)
         painter.setPen(QPen(self.frame_color, 5))
         painter.drawRect(self.rect())
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = ElementCard('Антивозрастная коллекция Освежающий тоник Цветочный', '123', '342')
-    ex.show()
-    print(type(ElementCard))
-    print(type(QWidget))
-    sys.exit(app.exec_())

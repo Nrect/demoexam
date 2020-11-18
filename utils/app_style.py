@@ -23,3 +23,20 @@ MAIN_STYLE = '''
             color:black;
         }
         '''
+RADIO_STYLE = '''
+           QRadioButton::indicator {
+               width:10px;
+               height:10px;
+               border: 1 px solid red;
+               border-radius: 7px;
+           }
+
+           QRadioButton::indicator:checked {
+               background-color:blue;
+               border:2px solid blue;     
+           }
+
+           QRadioButton::indicator:unchecked {
+               background-color:gray; 
+               border: 2px solid gray; 
+           }'''
