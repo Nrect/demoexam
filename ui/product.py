@@ -1,7 +1,8 @@
 import pyodbc
 
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QVBoxLayout, QScrollArea, QWidget, QGridLayout, QPushButton
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import QVBoxLayout, QScrollArea, QWidget, QGridLayout, QPushButton, QMainWindow, \
+    QApplication
 
 from ui.product_card import ElementCard
 
@@ -9,12 +10,26 @@ from utils.consts import connection_string
 from utils.helpers import set_window_style
 
 
-class ProductWindow(QWidget):
+class ProductWindow(QMainWindow):
     def __init__(self, parent=None):
         super(ProductWindow, self).__init__(parent, QtCore.Qt.Window)
         self.setWindowModality(QtCore.Qt.WindowModality(2))
         self.init_ui()
         set_window_style(self)
+
+    def init_ui(self):
+        self.product_window_widget = ProductWindowWidget(self)
+        self.statusBar().showMessage(self.product_window_widget.status_bar_meaasge)
+
+        self.setCentralWidget(self.product_window_widget)
+        self.move(300,100)
+
+class ProductWindowWidget(QWidget):
+    def __init__(self, parent):
+        super(ProductWindowWidget, self).__init__(parent)
+        self.init_ui()
+        self.status_bar_meaasge = f'Всего: {self.card_layout.count()} товаров.'
+
 
     def init_ui(self):
         vbox = QVBoxLayout()
@@ -37,7 +52,6 @@ class ProductWindow(QWidget):
         self.setLayout(vbox)
 
     def show_product_cards(self, sql_query):
-
         row = 0
         column = 0
         counter = 0
@@ -62,11 +76,11 @@ class ProductWindow(QWidget):
 
     # ? мб пригодится
     def remove_items(self):
-        elements = self.layout.count()
+        elements = self.card_layout.count()
         for i in range(elements - 1, -1, -1):
-            layoutItem = self.layout.itemAt(i)
+            layoutItem = self.card_layout.itemAt(i)
             w = layoutItem.widget()
             if w:
-                self.layout.removeWidget(w)
+                self.card_layout.removeWidget(w)
                 w.setParent(None)
                 w.deleteLater()

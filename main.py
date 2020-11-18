@@ -55,7 +55,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MainWindow()
     # Окно загрузки
-    splash = QSplashScreen(QtGui.QPixmap("beauty_logo.ico"))
+    splash = QSplashScreen(QPixmap("beauty_logo.ico"))
     splash.showMessage("Загрузка данных... 0%",
                        QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom, QtCore.Qt.black)
     splash.show()
