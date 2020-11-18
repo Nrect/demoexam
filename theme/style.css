@@ -20,3 +20,14 @@ QPushButton:hover {
 QPushButton:pressed {
     color: black;
 }
+
+QLineEdit {
+    font-size: 25px;
+    border-radius: 15px;
+    border: 2px solid rgb(225, 228, 255);
+}
+
+QLineEdit:focus {
+    border: 2px solid rgb(255, 74, 109)
+}
+

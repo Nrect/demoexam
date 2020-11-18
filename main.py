@@ -24,6 +24,7 @@ class MainWindow(QWidget):
         product_btn.clicked.connect(self.show_product_window)
         # quit_btn
         quit_btn = QPushButton('Выйти')
+        quit_btn.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         quit_btn.clicked.connect(app.quit)
         # Логотип
         logo = QLabel()

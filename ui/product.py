@@ -2,7 +2,7 @@ import pyodbc
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QVBoxLayout, QScrollArea, QWidget, QGridLayout, QPushButton, QMainWindow, \
-    QApplication
+    QApplication, QLineEdit, QCompleter
 
 from ui.product_card import ElementCard
 
@@ -19,22 +19,26 @@ class ProductWindow(QMainWindow):
 
     def init_ui(self):
         self.product_window_widget = ProductWindowWidget(self)
-        self.statusBar().showMessage(self.product_window_widget.status_bar_meaasge)
 
         self.setCentralWidget(self.product_window_widget)
-        self.move(300,100)
+        self.move(300, 100)
+
 
 class ProductWindowWidget(QWidget):
     def __init__(self, parent):
         super(ProductWindowWidget, self).__init__(parent)
         self.init_ui()
-        self.status_bar_meaasge = f'Всего: {self.card_layout.count()} товаров.'
-
 
     def init_ui(self):
         vbox = QVBoxLayout()
         show_btn = QPushButton('Цена по убываюнию')
         show_btn.clicked.connect(self.show_product)
+        # Поиск
+        self.searchbar = QLineEdit()
+        self.searchbar.setPlaceholderText('Поиск...')
+        self.searchbar.setTextMargins(5, 2, 5, 2)
+        self.searchbar.setClearButtonEnabled(True)
+        self.searchbar.textChanged.connect(self.update_display)
         # Скролл
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -42,13 +46,19 @@ class ProductWindowWidget(QWidget):
         # Контейнер карточек
         self.card_layout = QGridLayout(scroll__area_widget_contents)
         self.card_layout.setContentsMargins(10, 10, 10, 10)
-        self.show_product_cards('select * from Product')
+        self.show_product_cards("select * from Product")
         scroll_area.setWidget(scroll__area_widget_contents)
+        # Подскаски
+        self.completer = QCompleter(self.title_list)
+        self.completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.searchbar.setCompleter(self.completer)
+        self.completer.popup().setStyleSheet('font-size:25px;border:2px solid black;border-radius:5px;')
         # Добавление виджетов
+        vbox.addWidget(self.searchbar)
         vbox.addWidget(show_btn)
         vbox.addWidget(scroll_area)
         # Окно
-        self.setMinimumSize(1300, 700)
+        self.setMinimumSize(1300, 800)
         self.setLayout(vbox)
 
     def show_product_cards(self, sql_query):
@@ -61,6 +71,8 @@ class ProductWindowWidget(QWidget):
         cursor.execute(sql_query)
         product_list = cursor.fetchall()
 
+        self.title_list = []
+
         for product in product_list:
             counter += 1
             if counter % 4 == 1:
@@ -70,11 +82,18 @@ class ProductWindowWidget(QWidget):
                                'Активно' if product[4] else 'Не активен')
             column += 1
             self.card_layout.addWidget(card, row, column)
+            self.title_list.append(product[0])
 
     def show_product(self):
-        self.show_product_cards('select * from Product order by -Cost')
+        self.show_product_cards("select * from Product order by -Cost")
 
-    # ? мб пригодится
+    def update_display(selfs):
+        search_text = selfs.searchbar.text()
+        selfs.remove_items()
+        selfs.show_product_cards(f"select * from Product where Title like '{search_text}%'")
+
+
+
     def remove_items(self):
         elements = self.card_layout.count()
         for i in range(elements - 1, -1, -1):
