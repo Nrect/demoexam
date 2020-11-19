@@ -1,13 +1,22 @@
 import pyodbc
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
+from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QVBoxLayout, QScrollArea, QWidget, QGridLayout, QPushButton, QMainWindow, \
-    QApplication, QLineEdit, QCompleter
+    QHBoxLayout, QLineEdit, QCompleter, QComboBox
 
 from ui.product_card import ElementCard
 
 from utils.consts import connection_string
 from utils.helpers import set_window_style
+
+
+def get_manufacturer_items():
+    con = pyodbc.connect(connection_string)
+    cursor = con.cursor()
+    cursor.execute("select distinct ManufacturerID from Product ")
+    manufacturer_list = cursor.fetchall()
+    return manufacturer_list
 
 
 class ProductWindow(QMainWindow):
@@ -29,36 +38,72 @@ class ProductWindowWidget(QWidget):
         super(ProductWindowWidget, self).__init__(parent)
         self.parent = parent
         self.elements = 0
+        self.manufacturer_items = get_manufacturer_items()
         self.init_ui()
 
     def init_ui(self):
         vbox = QVBoxLayout()
-        show_btn = QPushButton('Цена по убываюнию')
-        show_btn.clicked.connect(self.show_product)
+
+        # Кнопки
+        btn_container = QHBoxLayout()
+        self.btn_cost_decrease = QPushButton('Цена по убываюнию')
+        self.btn_cost_decrease.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        self.btn_cost_decrease.clicked.connect(self.show_product_decrease)
+
+        self.btn_cost_increase = QPushButton('Цена по возрастанию')
+        self.btn_cost_increase.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        self.btn_cost_increase.clicked.connect(self.show_product_increase)
+
+        self.btn_cancel = QPushButton('Отменить')
+        self.btn_cancel.setDisabled(True)
+        self.btn_cancel.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        self.btn_cancel.clicked.connect(self.clear_filter)
+
+        btn_container.addWidget(self.btn_cost_decrease)
+        btn_container.addWidget(self.btn_cost_increase)
+        btn_container.addWidget(self.btn_cancel)
+
         # Поиск
         self.searchbar = QLineEdit()
+        self.searchbar.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         self.searchbar.setPlaceholderText('Поиск...')
         self.searchbar.setTextMargins(5, 2, 5, 2)
         self.searchbar.setClearButtonEnabled(True)
         self.searchbar.textChanged.connect(self.update_display)
+
+        # Фильтр Производитель
+        self.manufacturer_combobox = QComboBox()
+        self.manufacturer_combobox.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        self.manufacturer_combobox.addItem('Все производители')
+        self.manufacturer_combobox.setStyleSheet(
+            'QComboBox{font-size:22px;border:2px solid rgb(225, 228, 255);border-radius:5px;}')
+        for manufacturer in self.manufacturer_items:
+            self.manufacturer_combobox.addItem(manufacturer[0])
+        self.manufacturer_combobox.activated[str].connect(self.manufacturer_combobox_select)
+
         # Скролл
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll__area_widget_contents = QWidget()
+
         # Контейнер карточек
         self.card_layout = QGridLayout(scroll__area_widget_contents)
         self.card_layout.setContentsMargins(10, 10, 10, 10)
         self.show_product_cards("select * from Product")
         scroll_area.setWidget(scroll__area_widget_contents)
+
         # Подскаски
         self.completer = QCompleter(self.title_list)
         self.completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.searchbar.setCompleter(self.completer)
         self.completer.popup().setStyleSheet('font-size:25px;border:2px solid black;border-radius:5px;')
+
         # Добавление виджетов
         vbox.addWidget(self.searchbar)
-        vbox.addWidget(show_btn)
+        vbox.addWidget(self.manufacturer_combobox)
+        vbox.addLayout(btn_container)
         vbox.addWidget(scroll_area)
+
         # Окно
         self.setMinimumSize(1300, 800)
         self.setLayout(vbox)
@@ -71,11 +116,11 @@ class ProductWindowWidget(QWidget):
         con = pyodbc.connect(connection_string)
         cursor = con.cursor()
         cursor.execute(sql_query)
-        product_list = cursor.fetchall()
+        self.product_list = cursor.fetchall()
 
         self.title_list = []
 
-        for product in product_list:
+        for product in self.product_list:
             counter += 1
             if counter % 4 == 1:
                 row += 1
@@ -89,9 +134,31 @@ class ProductWindowWidget(QWidget):
         self.elements = self.card_layout.count()
         self.parent.statusBar().showMessage(f'Всего товаров: {str(self.elements)}')
 
-    def show_product(self):
-        print(self.counter)
+    def manufacturer_combobox_select(self, text):
+        self.remove_items()
+        if text != 'Все производители':
+            self.show_product_cards(f"select * from Product where ManufacturerID = '{text}'")
+        else:
+            self.show_product_cards(f"select * from Product")
+
+    def show_product_increase(self):
+        self.show_product_cards("select * from Product order by Cost")
+        self.btn_cost_increase.setStyleSheet('background-color: rgb(255, 74, 109);')
+        self.btn_cost_decrease.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
+        self.btn_cancel.setDisabled(False)
+
+    def show_product_decrease(self):
         self.show_product_cards("select * from Product order by -Cost")
+        self.btn_cost_decrease.setStyleSheet('background-color: rgb(255, 74, 109);')
+        self.btn_cost_increase.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
+        self.btn_cancel.setDisabled(False)
+
+    def clear_filter(self):
+        self.show_product_cards("select * from Product")
+        self.btn_cancel.setDisabled(True)
+        self.btn_cost_decrease.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
+        self.btn_cost_increase.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
+
 
     def update_display(self):
         search_text = self.searchbar.text()

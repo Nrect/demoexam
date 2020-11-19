@@ -22,19 +22,23 @@ class MainWindow(QWidget):
         product_btn = QPushButton('Товары')
         product_btn.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         product_btn.clicked.connect(self.show_product_window)
+
         # quit_btn
         quit_btn = QPushButton('Выйти')
         quit_btn.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         quit_btn.clicked.connect(app.quit)
+
         # Логотип
         logo = QLabel()
         pixam = QPixmap(ICO)
         logo.setPixmap(pixam)
         logo.setScaledContents(True)
         logo.setFixedSize(180, 180)
+
         # Обертка лого
         logo_wrapper = QHBoxLayout()
         logo_wrapper.addWidget(logo)
+
         # Контейнер
         vbox = QVBoxLayout()
         vbox.addLayout(logo_wrapper)
