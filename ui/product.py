@@ -142,18 +142,21 @@ class ProductWindowWidget(QWidget):
             self.show_product_cards(f"select * from Product")
 
     def show_product_increase(self):
+        self.remove_items()
         self.show_product_cards("select * from Product order by Cost")
         self.btn_cost_increase.setStyleSheet('background-color: rgb(255, 74, 109);')
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
         self.btn_cancel.setDisabled(False)
 
     def show_product_decrease(self):
+        self.remove_items()
         self.show_product_cards("select * from Product order by -Cost")
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(255, 74, 109);')
         self.btn_cost_increase.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
         self.btn_cancel.setDisabled(False)
 
     def clear_filter(self):
+        self.remove_items()
         self.show_product_cards("select * from Product")
         self.btn_cancel.setDisabled(True)
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')

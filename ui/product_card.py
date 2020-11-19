@@ -16,10 +16,13 @@ class ElementCard(QWidget):
         self.cost = cost
         self.is_active = is_active
 
-        self.init_ui()
-        self.label.setMouseTracking(True)
+        self.card_indicator = None
+
         self.frame_color = QtCore.Qt.darkGray
         self.setStyleSheet(RADIO_STYLE)
+
+        self.init_ui()
+        self.label.setMouseTracking(True)
 
     def init_ui(self):
         layout = QVBoxLayout()
@@ -102,6 +105,10 @@ class ElementCard(QWidget):
             self.radio3.setChecked(True)
         self.showimage(self.rb_group.checkedId())
 
+    def mousePressEvent(self, event):
+        self.card_indicator = 'On'
+        print('Click')
+
     def rbPressEvent(self):
         self.showimage(self.rb_group.checkedId())
 
@@ -110,6 +117,8 @@ class ElementCard(QWidget):
         painter = QPainter(self)
         if self.is_active.text() == 'Не активен':
             painter.setBrush(QtCore.Qt.gray)
+        elif self.card_indicator == 'On':
+            painter.setBrush(QtCore.Qt.red)
         else:
             painter.setBrush(QtCore.Qt.white)
         painter.setPen(QPen(self.frame_color, 5))

@@ -44,6 +44,7 @@ class MainWindow(QWidget):
         vbox.addLayout(logo_wrapper)
         vbox.addWidget(product_btn)
         vbox.addWidget(quit_btn)
+
         # Окно
         self.setLayout(vbox)
         self.resize(500, 500)
