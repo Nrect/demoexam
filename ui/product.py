@@ -27,6 +27,8 @@ class ProductWindow(QMainWindow):
 class ProductWindowWidget(QWidget):
     def __init__(self, parent):
         super(ProductWindowWidget, self).__init__(parent)
+        self.parent = parent
+        self.elements = 0
         self.init_ui()
 
     def init_ui(self):
@@ -83,20 +85,22 @@ class ProductWindowWidget(QWidget):
             column += 1
             self.card_layout.addWidget(card, row, column)
             self.title_list.append(product[0])
+        # Всего элементов
+        self.elements = self.card_layout.count()
+        self.parent.statusBar().showMessage(f'Всего товаров: {str(self.elements)}')
 
     def show_product(self):
+        print(self.counter)
         self.show_product_cards("select * from Product order by -Cost")
 
-    def update_display(selfs):
-        search_text = selfs.searchbar.text()
-        selfs.remove_items()
-        selfs.show_product_cards(f"select * from Product where Title like '{search_text}%'")
-
-
+    def update_display(self):
+        search_text = self.searchbar.text()
+        self.remove_items()
+        self.show_product_cards(
+            f"select * from Product where Title like '{search_text}%' or Description like '{search_text}%'")
 
     def remove_items(self):
-        elements = self.card_layout.count()
-        for i in range(elements - 1, -1, -1):
+        for i in range(self.elements - 1, -1, -1):
             layoutItem = self.card_layout.itemAt(i)
             w = layoutItem.widget()
             if w:
