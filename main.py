@@ -14,10 +14,12 @@ class MainWindow(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         set_window_style(self)
-        self.product_window = ProductWindow(self)
         self.init_ui()
 
     def init_ui(self):
+        self.product_window = ProductWindow(self)
+        self.product_window.setWindowTitle('Товары')
+
         # product_btn
         product_btn = QPushButton('Товары')
         product_btn.setCursor(QCursor(QtCore.Qt.PointingHandCursor))

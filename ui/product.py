@@ -141,22 +141,25 @@ class ProductWindowWidget(QWidget):
 
     def manufacturer_combobox_select(self, text):
         self.remove_items()
+        self.main_query = f"select * from Product where ManufacturerID = '{text}'"
         if text != 'Все производители':
             if self.decrease_indicator:
-                self.main_query = f"select * from Product where ManufacturerID = '{text}'" + " order by -Cost"
+                self.filter_query = self.main_query + " order by -Cost"
             elif self.increase_indicator:
-                self.main_query = f"select * from Product where ManufacturerID = '{text}'" + " order by Cost"
+                self.filter_query = self.main_query + " order by Cost"
             else:
-                self.main_query = f"select * from Product where ManufacturerID = '{text}'"
-            self.show_product_cards(self.main_query)
+                self.filter_query = self.main_query
+            self.show_product_cards(self.filter_query)
         else:
-            self.show_product_cards(f"select * from Product")
+            self.main_query = f"select * from Product"
+            self.show_product_cards(self.main_query)
 
     def show_product_increase(self):
         self.btn_cost_increase.setEnabled(False)
         self.btn_cost_decrease.setEnabled(True)
         self.decrease_indicator = False
         self.increase_indicator = True
+        self.remove_items()
         self.filter_query = self.main_query + " order by Cost"
         self.show_product_cards(self.filter_query)
         self.btn_cost_increase.setStyleSheet('background-color: rgb(255, 74, 109);')
@@ -168,6 +171,7 @@ class ProductWindowWidget(QWidget):
         self.btn_cost_increase.setEnabled(True)
         self.increase_indicator = False
         self.decrease_indicator = True
+        self.remove_items()
         self.filter_query = self.main_query + " order by -Cost"
         self.show_product_cards(self.filter_query)
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(255, 74, 109);')
