@@ -22,7 +22,7 @@ def get_manufacturer_items():
 class ProductWindow(QMainWindow):
     def __init__(self, parent=None):
         super(ProductWindow, self).__init__(parent, QtCore.Qt.Window)
-        self.setWindowModality(QtCore.Qt.WindowModality(2))
+        # self.setWindowModality(QtCore.Qt.WindowModality(2))
         self.init_ui()
         set_window_style(self)
 

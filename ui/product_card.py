@@ -1,6 +1,7 @@
 import os
 
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QFrame
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QGridLayout, \
+    QPushButton
 from PyQt5.QtGui import QPixmap, QFont, QPainter, QPen
 from PyQt5 import QtCore
 
@@ -16,47 +17,40 @@ class ElementCard(QWidget):
         self.cost = cost
         self.is_active = is_active
 
-        self.card_indicator = None
-
-        self.frame_color = QtCore.Qt.darkGray
-        self.setStyleSheet(RADIO_STYLE)
+        self.frame_color = QtCore.Qt.gray
 
         self.init_ui()
         self.label.setMouseTracking(True)
 
     def init_ui(self):
-        layout = QVBoxLayout()
+        self.setStyleSheet(RADIO_STYLE)
+
+        layout = QGridLayout()
         hbox = QHBoxLayout()
         hbox.setAlignment(QtCore.Qt.AlignHCenter)
 
+        self.btn_edit = QPushButton('Изменить')
+        self.btn_del = QPushButton('Удалить')
+        self.double_indicator = False
+
+        self.label = QLabel()
+        self.label.setMouseTracking(True)
+        self.show_image(0)
+
         self.rb_group = QButtonGroup()
-        self.radio0 = QRadioButton()
-        self.radio1 = QRadioButton()
-        self.radio2 = QRadioButton()
-        self.radio3 = QRadioButton()
+        self.radio_init(hbox)
 
-        self.radio0.setChecked(True)
-
-        self.rb_group.addButton(self.radio0)
-        self.rb_group.addButton(self.radio1)
-        self.rb_group.addButton(self.radio2)
-        self.rb_group.addButton(self.radio3)
-
-        self.rb_group.setId(self.radio0, 0)
-        self.rb_group.setId(self.radio1, 1)
-        self.rb_group.setId(self.radio2, 2)
-        self.rb_group.setId(self.radio3, 3)
-
+        self.rb_group.button(0).setChecked(True)
         self.rb_group.buttonClicked.connect(self.rbPressEvent)
 
-        hbox.addWidget(self.radio0)
-        hbox.addWidget(self.radio1)
-        hbox.addWidget(self.radio2)
-        hbox.addWidget(self.radio3)
+        hbox.addWidget(self.radio)
 
         self.name = QLabel(self.title)
+        self.name.setWordWrap(True)
         self.price = QLabel(self.cost)
+        self.price.setWordWrap(True)
         self.is_active = QLabel(self.is_active)
+        self.is_active.setWordWrap(True)
 
         self.name.setAlignment(QtCore.Qt.AlignHCenter)
         self.name.setMinimumWidth(100)
@@ -70,55 +64,62 @@ class ElementCard(QWidget):
         self.price.setFont(QFont('Roboto', 11, QFont.Normal))
 
         self.setLayout(layout)
-        self.label = QLabel()
-        self.label.setMouseTracking(True)
         layout.addWidget(self.label)
-        layout.addLayout(hbox)
+        layout.addLayout(hbox, 1, 0, alignment=QtCore.Qt.AlignHCenter)
         layout.addWidget(self.name)
         layout.addWidget(self.price)
         layout.addWidget(self.is_active)
 
-        self.setFixedSize(300, 300)
+        self.setFixedSize(300, 330)
 
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.showimage(0)
 
-    def showimage(self, imagenumber):
+    def show_image(self, imagenumber):
         directory = "./Товары салона красоты"
-        self.imagelist = os.listdir(directory)[:4]
+        self.imagelist = os.listdir(directory)[:10]
         pixmap = QPixmap(directory + '\\' + self.imagelist[imagenumber])
 
         self.label.setPixmap(pixmap)
-        # self.label.setFixedSize(200, 220)
         self.label.setScaledContents(True)
 
-    def mouseMoveEvent(self, event):
-        pos_x = event.pos().x()
-        width = self.label.width()
-        if pos_x <= width / 4:
-            self.radio0.setChecked(True)
-        elif pos_x >= width / 4 and pos_x <= width / 2:
-            self.radio1.setChecked(True)
-        elif pos_x >= width / 2 and pos_x <= width / 1.3:
-            self.radio2.setChecked(True)
-        else:
-            self.radio3.setChecked(True)
-        self.showimage(self.rb_group.checkedId())
-
-    def mousePressEvent(self, event):
-        # self.card_indicator = 'On'
-        print('Click')
-
     def rbPressEvent(self):
-        self.showimage(self.rb_group.checkedId())
+        self.show_image(self.rb_group.checkedId())
+
+    def radio_init(self, container):
+        for i in range(len(self.imagelist)):
+            self.radio = QRadioButton()
+            self.rb_group.addButton(self.radio)
+            self.rb_group.setId(self.radio, i)
+            container.addWidget(self.radio)
+
+    def mouseMoveEvent(self, event):
+        x = event.pos().x()
+        step = self.label.width() / len(self.imagelist)
+        width_step = 0
+        res = {}
+        counter = 0
+        while counter < len(self.imagelist):
+            width_step += step
+            res.update({counter: width_step})
+            counter += 1
+            for i in res.keys():
+                if res[i] < x:
+                    self.rb_group.button(i).setChecked(True)
+        self.rbPressEvent()
+
+    def mouseDoubleClickEvent(self, event):
+        if self.double_indicator:
+            self.double_indicator = False
+        else:
+            self.double_indicator = True
+        print(self.title, self.cost, self.is_active.text())
+        print(self.double_indicator)
 
     # Цвет рамки заднего фона карточки
     def paintEvent(self, event):
         painter = QPainter(self)
         if self.is_active.text() == 'Не активен':
             painter.setBrush(QtCore.Qt.gray)
-        # elif self.card_indicator == 'On':
-        #     painter.setBrush(QtCore.Qt.red)
         else:
             painter.setBrush(QtCore.Qt.white)
         painter.setPen(QPen(self.frame_color, 5))
