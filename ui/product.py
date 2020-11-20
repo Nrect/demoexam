@@ -42,6 +42,11 @@ class ProductWindowWidget(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        self.main_query = "select * from Product"
+        self.filter_query = None
+        self.decrease_indicator = None
+        self.increase_indicator = None
+
         vbox = QVBoxLayout()
 
         # Кнопки
@@ -89,7 +94,7 @@ class ProductWindowWidget(QWidget):
         # Контейнер карточек
         self.card_layout = QGridLayout(scroll__area_widget_contents)
         self.card_layout.setContentsMargins(10, 10, 10, 10)
-        self.show_product_cards("select * from Product")
+        self.show_product_cards(self.main_query)
         scroll_area.setWidget(scroll__area_widget_contents)
 
         # Подскаски
@@ -137,37 +142,56 @@ class ProductWindowWidget(QWidget):
     def manufacturer_combobox_select(self, text):
         self.remove_items()
         if text != 'Все производители':
-            self.show_product_cards(f"select * from Product where ManufacturerID = '{text}'")
+            if self.decrease_indicator:
+                self.main_query = f"select * from Product where ManufacturerID = '{text}'" + " order by -Cost"
+            elif self.increase_indicator:
+                self.main_query = f"select * from Product where ManufacturerID = '{text}'" + " order by Cost"
+            else:
+                self.main_query = f"select * from Product where ManufacturerID = '{text}'"
+            self.show_product_cards(self.main_query)
         else:
             self.show_product_cards(f"select * from Product")
 
     def show_product_increase(self):
-        self.remove_items()
-        self.show_product_cards("select * from Product order by Cost")
+        self.btn_cost_increase.setEnabled(False)
+        self.btn_cost_decrease.setEnabled(True)
+        self.decrease_indicator = False
+        self.increase_indicator = True
+        self.filter_query = self.main_query + " order by Cost"
+        self.show_product_cards(self.filter_query)
         self.btn_cost_increase.setStyleSheet('background-color: rgb(255, 74, 109);')
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
         self.btn_cancel.setDisabled(False)
 
     def show_product_decrease(self):
-        self.remove_items()
-        self.show_product_cards("select * from Product order by -Cost")
+        self.btn_cost_decrease.setEnabled(False)
+        self.btn_cost_increase.setEnabled(True)
+        self.increase_indicator = False
+        self.decrease_indicator = True
+        self.filter_query = self.main_query + " order by -Cost"
+        self.show_product_cards(self.filter_query)
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(255, 74, 109);')
         self.btn_cost_increase.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
         self.btn_cancel.setDisabled(False)
 
     def clear_filter(self):
+        self.btn_cost_decrease.setEnabled(True)
+        self.btn_cost_increase.setEnabled(True)
+        self.increase_indicator = False
+        self.decrease_indicator = False
         self.remove_items()
-        self.show_product_cards("select * from Product")
+        self.show_product_cards(self.main_query)
         self.btn_cancel.setDisabled(True)
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
         self.btn_cost_increase.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
 
-
     def update_display(self):
         search_text = self.searchbar.text()
         self.remove_items()
-        self.show_product_cards(
-            f"select * from Product where Title like '{search_text}%' or Description like '{search_text}%'")
+        if len(search_text) <= 0:
+            self.manufacturer_combobox.setCurrentIndex(0)
+        self.main_query = f"select * from Product where Title like '{search_text}%' or Description like '{search_text}%'"
+        self.show_product_cards(self.main_query)
 
     def remove_items(self):
         for i in range(self.elements - 1, -1, -1):

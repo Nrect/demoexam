@@ -106,7 +106,7 @@ class ElementCard(QWidget):
         self.showimage(self.rb_group.checkedId())
 
     def mousePressEvent(self, event):
-        self.card_indicator = 'On'
+        # self.card_indicator = 'On'
         print('Click')
 
     def rbPressEvent(self):
@@ -117,8 +117,8 @@ class ElementCard(QWidget):
         painter = QPainter(self)
         if self.is_active.text() == 'Не активен':
             painter.setBrush(QtCore.Qt.gray)
-        elif self.card_indicator == 'On':
-            painter.setBrush(QtCore.Qt.red)
+        # elif self.card_indicator == 'On':
+        #     painter.setBrush(QtCore.Qt.red)
         else:
             painter.setBrush(QtCore.Qt.white)
         painter.setPen(QPen(self.frame_color, 5))
