@@ -9,12 +9,14 @@ from utils.app_style import RADIO_STYLE
 
 
 class ElementCard(QWidget):
-    def __init__(self, title, cost, is_active):
+    def __init__(self, title, cost, main_image, product_photos, is_active):
         super().__init__()
         self.image_number = 0
 
         self.title = title
         self.cost = cost
+        self.main_image = main_image
+        self.product_photos = product_photos
         self.is_active = is_active
 
         self.frame_color = QtCore.Qt.gray
@@ -31,7 +33,6 @@ class ElementCard(QWidget):
 
         self.btn_edit = QPushButton('Изменить')
         self.btn_del = QPushButton('Удалить')
-        self.double_indicator = False
 
         self.label = QLabel()
         self.label.setMouseTracking(True)
@@ -74,11 +75,12 @@ class ElementCard(QWidget):
 
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
 
+    # TODO Доделать спавн картинок
     def show_image(self, imagenumber):
         directory = "./Товары салона красоты"
-        self.imagelist = os.listdir(directory)[:10]
-        pixmap = QPixmap(directory + '\\' + self.imagelist[imagenumber])
-
+        self.imagelist = self.product_photos
+        self.imagelist.insert(0, "./" + self.main_image)
+        pixmap = QPixmap(self.imagelist[imagenumber])
         self.label.setPixmap(pixmap)
         self.label.setScaledContents(True)
 
@@ -107,13 +109,8 @@ class ElementCard(QWidget):
                     self.rb_group.button(i).setChecked(True)
         self.rbPressEvent()
 
-    def mouseDoubleClickEvent(self, event):
-        if self.double_indicator:
-            self.double_indicator = False
-        else:
-            self.double_indicator = True
-        print(self.title, self.cost, self.is_active.text())
-        print(self.double_indicator)
+    def contextMenuEvent(self, event):
+        print(self.product_photos)
 
     # Цвет рамки заднего фона карточки
     def paintEvent(self, event):

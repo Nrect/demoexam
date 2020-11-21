@@ -10,13 +10,20 @@ from ui.product_card import ElementCard
 from utils.consts import connection_string
 from utils.helpers import set_window_style
 
+con = pyodbc.connect(connection_string)
+cursor = con.cursor()
+
 
 def get_manufacturer_items():
-    con = pyodbc.connect(connection_string)
-    cursor = con.cursor()
     cursor.execute("select distinct ManufacturerID from Product ")
     manufacturer_list = cursor.fetchall()
     return manufacturer_list
+
+
+def get_product_photos(product: str) -> list:
+    cursor.execute(f"SELECT PhotoPath FROM ProductPhoto WHERE ProductID = '{product}'")
+    product_photo_list = cursor.fetchall()
+    return product_photo_list
 
 
 class ProductWindow(QMainWindow):
@@ -36,9 +43,12 @@ class ProductWindow(QMainWindow):
 class ProductWindowWidget(QWidget):
     def __init__(self, parent):
         super(ProductWindowWidget, self).__init__(parent)
+
         self.parent = parent
-        self.elements = 0
+
         self.manufacturer_items = get_manufacturer_items()
+        self.product_photos = get_product_photos
+
         self.init_ui()
 
     def init_ui(self):
@@ -46,6 +56,7 @@ class ProductWindowWidget(QWidget):
         self.filter_query = None
         self.decrease_indicator = None
         self.increase_indicator = None
+        self.elements = 0
 
         vbox = QVBoxLayout()
 
@@ -130,11 +141,12 @@ class ProductWindowWidget(QWidget):
             if counter % 4 == 1:
                 row += 1
                 column = 0
-            card = ElementCard(product[0], str(int(product[1])) + ' руб.',
+            card = ElementCard(product[0], str(int(product[1])) + ' руб.', product[3], self.product_photos(product[0]),
                                'Активно' if product[4] else 'Не активен')
             column += 1
             self.card_layout.addWidget(card, row, column)
             self.title_list.append(product[0])
+
         # Всего элементов
         self.elements = self.card_layout.count()
         self.parent.statusBar().showMessage(f'Всего товаров: {str(self.elements)}')
