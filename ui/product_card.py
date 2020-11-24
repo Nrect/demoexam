@@ -6,11 +6,13 @@ from PyQt5 import QtCore
 from ui.product_add_eddit import ProductForm
 
 from utils.app_style import RADIO_STYLE
-from utils.helpers import show_message
+from utils.helpers import show_message, TYPES_FORM
 
 
 class ElementCard(QWidget):
-    def __init__(self, title, attached_products, cost, main_image, product_photos, is_active):
+    def __init__(self, title, attached_products, cost, main_image, product_photos, is_active, description, uuid,
+                 manufacturer
+                 ):
         super().__init__()
         self.image_number = 0
 
@@ -20,6 +22,9 @@ class ElementCard(QWidget):
         self.product_main_image = main_image
         self.product_photos = product_photos
         self.product_is_active = is_active
+        self.product_description = description
+        self.product_uuid = uuid
+        self.product_manufacturer = manufacturer
 
         self.frame_color = QtCore.Qt.gray
 
@@ -27,7 +32,7 @@ class ElementCard(QWidget):
         self.label.setMouseTracking(True)
 
     def init_ui(self):
-        self.product_form_window = ProductForm()
+
         self.setStyleSheet(RADIO_STYLE)
 
         self.layout = QVBoxLayout()
@@ -140,14 +145,22 @@ class ElementCard(QWidget):
             self.btn_edit.hide()
 
     def btn_edit_click(self):
+        try:
+            self.product_form_window = ProductForm(TYPES_FORM[1], self.product_main_image, self.product_title,
+                                                   self.product_cost, self.product_description, self.product_is_active,
+                                                   self.product_uuid, self.product_manufacturer)
+        except Exception as e:
+            print(e)
         self.product_form_window.show()
 
+    # TODO Сделать удаление товара по заданию
     def btn_delete_click(self):
         try:
             show_message('Удалить товар?', '', self.btn_message_click)
         except Exception as e:
             print(e)
 
+    # TODO Сделать удаление товара по заданию
     def btn_message_click(self, i):
         print(i.text())
 

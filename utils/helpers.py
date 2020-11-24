@@ -1,5 +1,6 @@
 import time
 
+import pyodbc
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMessageBox
@@ -7,6 +8,22 @@ from PyQt5.QtWidgets import QMessageBox
 from utils.app_style import WINDOW_STYLE_ID
 from utils.app_style import ICO
 
+from utils.consts import connection_string
+
+TYPES_FORM = ('Create', 'Update')
+
+
+def execute_query(query: str) -> list:
+    con = pyodbc.connect(connection_string)
+    cursor = con.cursor()
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+def get_all_manufactures() -> list:
+    res = execute_query("SELECT Name FROM Manufacturer")
+    manufacturer_list = [x[0] for x in res]
+    return manufacturer_list
 
 def show_message(title, message, function):
     msg = QMessageBox()

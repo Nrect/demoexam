@@ -1,22 +1,12 @@
-import pyodbc
-
 from PyQt5 import QtCore
 from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QVBoxLayout, QScrollArea, QWidget, QGridLayout, QPushButton, QMainWindow, \
-    QHBoxLayout, QLineEdit, QCompleter, QComboBox
+    QLineEdit, QCompleter, QComboBox
 
 from ui.product_card import ElementCard
 from ui.product_add_eddit import ProductForm
 
-from utils.consts import connection_string
-from utils.helpers import set_window_style
-
-
-def execute_query(query):
-    con = pyodbc.connect(connection_string)
-    cursor = con.cursor()
-    cursor.execute(query)
-    return cursor.fetchall()
+from utils.helpers import set_window_style, execute_query, TYPES_FORM
 
 
 def get_manufacturer_items() -> list:
@@ -66,8 +56,6 @@ class ProductWindowWidget(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        self.product_form = ProductForm()
-
         self.main_query = "select * from Product"
         self.filter_query = None
         self.decrease_indicator = None
@@ -104,7 +92,6 @@ class ProductWindowWidget(QWidget):
         self.searchbar = QLineEdit()
         self.searchbar.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         self.searchbar.setPlaceholderText('Поиск...')
-        self.searchbar.setTextMargins(5, 2, 5, 2)
         self.searchbar.setClearButtonEnabled(True)
         self.searchbar.textChanged.connect(self.update_display)
 
@@ -112,8 +99,6 @@ class ProductWindowWidget(QWidget):
         self.manufacturer_combobox = QComboBox()
         self.manufacturer_combobox.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         self.manufacturer_combobox.addItem('Все производители')
-        self.manufacturer_combobox.setStyleSheet(
-            'QComboBox{font-size:22px;border:2px solid rgb(225, 228, 255);border-radius:5px;}')
         for manufacturer in self.manufacturer_items:
             self.manufacturer_combobox.addItem(manufacturer[0])
         self.manufacturer_combobox.activated[str].connect(self.manufacturer_combobox_select)
@@ -163,12 +148,12 @@ class ProductWindowWidget(QWidget):
             card = ElementCard(product[0], self.product_attached_products_count(product[0]),
                                str(int(product[1])) + ' руб.',
                                product[3], self.product_photos(product[0]),
-                               'Активно' if product[4] else 'Не активен')
+                               'Активно' if product[4] else 'Не активен', product[2], product[6], product[5])
             column += 1
             self.card_layout.addWidget(card, row, column)
             self.title_list.append(product[0])
 
-        # Всего элементов
+        # Всего товаров
         self.elements = self.card_layout.count()
         self.parent.statusBar().showMessage(f'Всего товаров: {str(self.elements)}')
 
@@ -222,7 +207,9 @@ class ProductWindowWidget(QWidget):
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
         self.btn_cost_increase.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
 
+    # TODO Сделать добавлление твоаров
     def open_product_form(self):
+        self.product_form = ProductForm(TYPES_FORM[0], '', '', '', '', '', '', '')
         self.product_form.show_window()
 
     def update_display(self):
