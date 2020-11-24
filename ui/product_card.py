@@ -1,23 +1,25 @@
-import os
-
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QRadioButton, QButtonGroup, QGridLayout, \
-    QPushButton
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QRadioButton, QButtonGroup, QGridLayout, QPushButton, \
+    QVBoxLayout
 from PyQt5.QtGui import QPixmap, QFont, QPainter, QPen
 from PyQt5 import QtCore
 
+from ui.product_add_eddit import ProductForm
+
 from utils.app_style import RADIO_STYLE
+from utils.helpers import show_message
 
 
 class ElementCard(QWidget):
-    def __init__(self, title, cost, main_image, product_photos, is_active):
+    def __init__(self, title, attached_products, cost, main_image, product_photos, is_active):
         super().__init__()
         self.image_number = 0
 
-        self.title = title
-        self.cost = cost
-        self.main_image = main_image
+        self.product_title = title
+        self.product_attached_products = attached_products
+        self.product_cost = cost
+        self.product_main_image = main_image
         self.product_photos = product_photos
-        self.is_active = is_active
+        self.product_is_active = is_active
 
         self.frame_color = QtCore.Qt.gray
 
@@ -25,19 +27,36 @@ class ElementCard(QWidget):
         self.label.setMouseTracking(True)
 
     def init_ui(self):
+        self.product_form_window = ProductForm()
         self.setStyleSheet(RADIO_STYLE)
 
-        layout = QGridLayout()
+        self.layout = QVBoxLayout()
         hbox = QHBoxLayout()
         hbox.setAlignment(QtCore.Qt.AlignHCenter)
 
-        self.btn_edit = QPushButton('Изменить')
-        self.btn_del = QPushButton('Удалить')
+        self.card_active_indicator = False
 
+        # Кнопки
+        self.btn_container = QHBoxLayout()
+
+        self.btn_edit = QPushButton('Изменить')
+        self.btn_edit.clicked.connect(self.btn_edit_click)
+
+        self.btn_delete = QPushButton('Удалить')
+        self.btn_delete.clicked.connect(self.btn_delete_click)
+
+        self.btn_container.addWidget(self.btn_edit)
+        self.btn_container.addWidget(self.btn_delete)
+
+        self.btn_delete.hide()
+        self.btn_edit.hide()
+
+        # Изображение
         self.label = QLabel()
         self.label.setMouseTracking(True)
         self.show_image(0)
 
+        # Радио-кнопки
         self.rb_group = QButtonGroup()
         self.radio_init(hbox)
 
@@ -46,11 +65,11 @@ class ElementCard(QWidget):
 
         hbox.addWidget(self.radio)
 
-        self.name = QLabel(self.title)
+        self.name = QLabel(self.product_title + f"({self.product_attached_products})")
         self.name.setWordWrap(True)
-        self.price = QLabel(self.cost)
+        self.price = QLabel(self.product_cost)
         self.price.setWordWrap(True)
-        self.is_active = QLabel(self.is_active)
+        self.is_active = QLabel(self.product_is_active)
         self.is_active.setWordWrap(True)
 
         self.name.setAlignment(QtCore.Qt.AlignHCenter)
@@ -64,22 +83,21 @@ class ElementCard(QWidget):
         self.name.setFont(QFont('Roboto', 11, QFont.Normal))
         self.price.setFont(QFont('Roboto', 11, QFont.Normal))
 
-        self.setLayout(layout)
-        layout.addWidget(self.label)
-        layout.addLayout(hbox, 1, 0, alignment=QtCore.Qt.AlignHCenter)
-        layout.addWidget(self.name)
-        layout.addWidget(self.price)
-        layout.addWidget(self.is_active)
+        self.layout.addWidget(self.label)
+        self.layout.addLayout(hbox)
+        self.layout.addWidget(self.name)
+        self.layout.addWidget(self.price)
+        self.layout.addWidget(self.is_active)
+        self.layout.addLayout(self.btn_container)
 
         self.setFixedSize(300, 330)
+        self.setLayout(self.layout)
 
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
 
-    # TODO Доделать спавн картинок
     def show_image(self, imagenumber):
-        directory = "./Товары салона красоты"
-        self.imagelist = self.product_photos
-        self.imagelist.insert(0, "./" + self.main_image)
+        self.imagelist = list(self.product_photos)
+        self.imagelist.insert(0, "./" + self.product_main_image)
         pixmap = QPixmap(self.imagelist[imagenumber])
         self.label.setPixmap(pixmap)
         self.label.setScaledContents(True)
@@ -96,6 +114,7 @@ class ElementCard(QWidget):
 
     def mouseMoveEvent(self, event):
         x = event.pos().x()
+        y = event.pos().y()
         step = self.label.width() / len(self.imagelist)
         width_step = 0
         res = {}
@@ -105,12 +124,32 @@ class ElementCard(QWidget):
             res.update({counter: width_step})
             counter += 1
             for i in res.keys():
-                if res[i] < x:
-                    self.rb_group.button(i).setChecked(True)
+                if y < self.label.height():
+                    if res[i] < x:
+                        self.rb_group.button(i).setChecked(True)
         self.rbPressEvent()
 
-    def contextMenuEvent(self, event):
-        print(self.product_photos)
+    def mousePressEvent(self, event):
+        if not self.card_active_indicator:
+            self.card_active_indicator = True
+            self.btn_delete.show()
+            self.btn_edit.show()
+        else:
+            self.card_active_indicator = False
+            self.btn_delete.hide()
+            self.btn_edit.hide()
+
+    def btn_edit_click(self):
+        self.product_form_window.show()
+
+    def btn_delete_click(self):
+        try:
+            show_message('Удалить товар?', '', self.btn_message_click)
+        except Exception as e:
+            print(e)
+
+    def btn_message_click(self, i):
+        print(i.text())
 
     # Цвет рамки заднего фона карточки
     def paintEvent(self, event):

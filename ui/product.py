@@ -6,29 +6,42 @@ from PyQt5.QtWidgets import QVBoxLayout, QScrollArea, QWidget, QGridLayout, QPus
     QHBoxLayout, QLineEdit, QCompleter, QComboBox
 
 from ui.product_card import ElementCard
+from ui.product_add_eddit import ProductForm
 
 from utils.consts import connection_string
 from utils.helpers import set_window_style
 
-con = pyodbc.connect(connection_string)
-cursor = con.cursor()
+
+def execute_query(query):
+    con = pyodbc.connect(connection_string)
+    cursor = con.cursor()
+    cursor.execute(query)
+    return cursor.fetchall()
 
 
-def get_manufacturer_items():
-    cursor.execute("select distinct ManufacturerID from Product ")
-    manufacturer_list = cursor.fetchall()
+def get_manufacturer_items() -> list:
+    res = execute_query("select distinct ManufacturerID from Product ")
+    manufacturer_list = res
     return manufacturer_list
 
 
 def get_product_photos(product: str) -> list:
-    cursor.execute(f"SELECT PhotoPath FROM ProductPhoto WHERE ProductID = '{product}'")
-    product_photo_list = cursor.fetchall()
+    res = execute_query(f"SELECT PhotoPath FROM ProductPhoto WHERE ProductID = '{product}'")
+    product_photo = res
+    product_photo_list = [x[0] for x in product_photo]
     return product_photo_list
+
+
+def get_product_attached_product(product: str) -> str:
+    res = execute_query(f"select COUNT(*) from AttachedProduct where MainProductID = '{product}'")
+    attached_product = res
+    attached_product_count = str([x[0] for x in attached_product][0])
+    return attached_product_count
 
 
 class ProductWindow(QMainWindow):
     def __init__(self, parent=None):
-        super(ProductWindow, self).__init__(parent, QtCore.Qt.Window)
+        super(ProductWindow, self).__init__(parent)
         # self.setWindowModality(QtCore.Qt.WindowModality(2))
         self.init_ui()
         set_window_style(self)
@@ -48,10 +61,13 @@ class ProductWindowWidget(QWidget):
 
         self.manufacturer_items = get_manufacturer_items()
         self.product_photos = get_product_photos
+        self.product_attached_products_count = get_product_attached_product
 
         self.init_ui()
 
     def init_ui(self):
+        self.product_form = ProductForm()
+
         self.main_query = "select * from Product"
         self.filter_query = None
         self.decrease_indicator = None
@@ -61,7 +77,7 @@ class ProductWindowWidget(QWidget):
         vbox = QVBoxLayout()
 
         # Кнопки
-        btn_container = QHBoxLayout()
+        btn_container = QGridLayout()
         self.btn_cost_decrease = QPushButton('Цена по убываюнию')
         self.btn_cost_decrease.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         self.btn_cost_decrease.clicked.connect(self.show_product_decrease)
@@ -75,9 +91,14 @@ class ProductWindowWidget(QWidget):
         self.btn_cancel.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         self.btn_cancel.clicked.connect(self.clear_filter)
 
-        btn_container.addWidget(self.btn_cost_decrease)
-        btn_container.addWidget(self.btn_cost_increase)
-        btn_container.addWidget(self.btn_cancel)
+        self.btn_add = QPushButton('Добавить товар')
+        self.btn_add.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        self.btn_add.clicked.connect(self.open_product_form)
+
+        btn_container.addWidget(self.btn_cost_decrease, 0, 0)
+        btn_container.addWidget(self.btn_cost_increase, 0, 1)
+        btn_container.addWidget(self.btn_cancel, 0, 2)
+        btn_container.addWidget(self.btn_add, 1, 0, 1, 3)
 
         # Поиск
         self.searchbar = QLineEdit()
@@ -129,10 +150,8 @@ class ProductWindowWidget(QWidget):
         column = 0
         counter = 0
 
-        con = pyodbc.connect(connection_string)
-        cursor = con.cursor()
-        cursor.execute(sql_query)
-        self.product_list = cursor.fetchall()
+        res = execute_query(sql_query)
+        self.product_list = res
 
         self.title_list = []
 
@@ -141,7 +160,9 @@ class ProductWindowWidget(QWidget):
             if counter % 4 == 1:
                 row += 1
                 column = 0
-            card = ElementCard(product[0], str(int(product[1])) + ' руб.', product[3], self.product_photos(product[0]),
+            card = ElementCard(product[0], self.product_attached_products_count(product[0]),
+                               str(int(product[1])) + ' руб.',
+                               product[3], self.product_photos(product[0]),
                                'Активно' if product[4] else 'Не активен')
             column += 1
             self.card_layout.addWidget(card, row, column)
@@ -200,6 +221,9 @@ class ProductWindowWidget(QWidget):
         self.btn_cancel.setDisabled(True)
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
         self.btn_cost_increase.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
+
+    def open_product_form(self):
+        self.product_form.show_window()
 
     def update_display(self):
         search_text = self.searchbar.text()
