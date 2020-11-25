@@ -1,11 +1,11 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QRadioButton, QButtonGroup, QGridLayout, QPushButton, \
     QVBoxLayout
-from PyQt5.QtGui import QPixmap, QFont, QPainter, QPen
+from PyQt5.QtGui import QPixmap, QFont, QPainter, QPen, QIcon
 from PyQt5 import QtCore
 
 from ui.product_add_eddit import ProductForm
 
-from utils.app_style import RADIO_STYLE
+from utils.app_style import RADIO_STYLE, ICO
 from utils.helpers import show_message, TYPES_FORM
 
 
@@ -149,6 +149,7 @@ class ElementCard(QWidget):
             self.product_form_window = ProductForm(TYPES_FORM[1], self.product_main_image, self.product_title,
                                                    self.product_cost, self.product_description, self.product_is_active,
                                                    self.product_uuid, self.product_manufacturer)
+            self.product_form_window.setWindowTitle('Редактировать товар')
         except Exception as e:
             print(e)
         self.product_form_window.show()

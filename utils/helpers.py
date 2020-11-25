@@ -1,4 +1,5 @@
 import time
+import uuid
 
 import pyodbc
 from PyQt5 import QtCore
@@ -12,18 +13,26 @@ from utils.consts import connection_string
 
 TYPES_FORM = ('Create', 'Update')
 
+con = pyodbc.connect(connection_string)
+
 
 def execute_query(query: str) -> list:
-    con = pyodbc.connect(connection_string)
     cursor = con.cursor()
     cursor.execute(query)
     return cursor.fetchall()
+
+
+def create_update(query: str, fields: list):
+    cursor = con.cursor()
+    cursor.execute(query, fields)
+    cursor.commit()
 
 
 def get_all_manufactures() -> list:
     res = execute_query("SELECT Name FROM Manufacturer")
     manufacturer_list = [x[0] for x in res]
     return manufacturer_list
+
 
 def show_message(title, message, function):
     msg = QMessageBox()
@@ -51,6 +60,10 @@ def show_error_message(detail, error_message='Произошла ошибка!')
     msg.setDetailedText(str(detail))
 
     msg.exec_()
+
+
+def uuid_generator():
+    return str(uuid.uuid4())
 
 
 def set_window_style(self):

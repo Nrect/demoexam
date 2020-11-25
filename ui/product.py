@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QScrollArea, QWidget, QGridLayout, QPus
 from ui.product_card import ElementCard
 from ui.product_add_eddit import ProductForm
 
-from utils.helpers import set_window_style, execute_query, TYPES_FORM
+from utils.helpers import set_window_style, execute_query, TYPES_FORM, get_all_manufactures
 
 
 def get_manufacturer_items() -> list:
@@ -27,6 +27,16 @@ def get_product_attached_product(product: str) -> str:
     attached_product = res
     attached_product_count = str([x[0] for x in attached_product][0])
     return attached_product_count
+
+
+def get_attached_products(product: str) -> list:
+    res = execute_query(f"Select AttachedProductID from AttachedProduct where MainProductID = '{product}'")
+    attached_products = res
+    attached_products_list = [x[0] for x in attached_products]
+    return attached_products_list
+
+
+print(get_attached_products('Антивозрастная коллекция Освежающий тоник Цветочный'))
 
 
 class ProductWindow(QMainWindow):
@@ -210,6 +220,7 @@ class ProductWindowWidget(QWidget):
     # TODO Сделать добавлление твоаров
     def open_product_form(self):
         self.product_form = ProductForm(TYPES_FORM[0], '', '', '', '', '', '', '')
+        self.product_form.setWindowTitle('Добавить товар')
         self.product_form.show_window()
 
     def update_display(self):
