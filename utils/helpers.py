@@ -28,6 +28,12 @@ def create_update(query: str, fields: list):
     cursor.commit()
 
 
+def delete_query(query: str):
+    cursor = con.cursor()
+    cursor.execute(query)
+    cursor.commit()
+
+
 def get_all_manufactures() -> list:
     res = execute_query("SELECT Name FROM Manufacturer")
     manufacturer_list = [x[0] for x in res]

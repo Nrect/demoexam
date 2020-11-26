@@ -42,3 +42,14 @@ QLabel {
     font-size: 22px;
 }
 
+QTextEdit {
+    font-size: 25px;
+    border-radius: 15px;
+    border: 2px solid rgb(225, 228, 255);
+    padding: 5px 15px 5px 15px
+}
+
+QTextEdit:focus {
+    border: 2px solid rgb(255, 74, 109)
+}
+

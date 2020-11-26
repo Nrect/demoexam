@@ -10,7 +10,7 @@ from utils.helpers import set_window_style, execute_query, TYPES_FORM, get_all_m
 
 
 def get_manufacturer_items() -> list:
-    res = execute_query("select distinct ManufacturerID from Product ")
+    res = execute_query("SELECT Name FROM Manufacturer")
     manufacturer_list = res
     return manufacturer_list
 

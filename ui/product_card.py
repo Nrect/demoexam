@@ -5,8 +5,8 @@ from PyQt5 import QtCore
 
 from ui.product_add_eddit import ProductForm
 
-from utils.app_style import RADIO_STYLE, ICO
-from utils.helpers import show_message, TYPES_FORM
+from utils.app_style import RADIO_STYLE
+from utils.helpers import show_message, TYPES_FORM, delete_query
 
 
 class ElementCard(QWidget):
@@ -163,7 +163,11 @@ class ElementCard(QWidget):
 
     # TODO Сделать удаление товара по заданию
     def btn_message_click(self, i):
-        print(i.text())
+        if i.text() == '&Yes':
+            try:
+                delete_query(f"DELETE FROM Product WHERE Title = '{self.product_title}'")
+            except Exception as e:
+                print(e)
 
     # Цвет рамки заднего фона карточки
     def paintEvent(self, event):

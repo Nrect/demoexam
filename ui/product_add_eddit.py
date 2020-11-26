@@ -32,7 +32,6 @@ class ProductForm(QWidget):
         #     return cls.instance
 
     def init_ui(self):
-        self.product_window = ProductWindowWidget()
         self.imagePath = ''
         main_layout = QGridLayout()
         form_layout = QFormLayout()
@@ -92,9 +91,11 @@ class ProductForm(QWidget):
 
             self.line_product_manufacturer.setCurrentText(self.product_manufacturer)
 
+
         # Добавление элементов
         form_layout.addRow(QLabel('Фото:'), self.line_product_main_photo)
-        form_layout.addRow(QLabel('Идентификатор:'), self.line_product_uuid)
+        if self.type_form == TYPES_FORM[1]:
+            form_layout.addRow(QLabel('Идентификатор:'), self.line_product_uuid)
         form_layout.addRow(QLabel('Наименование:'), self.line_product_name)
         form_layout.addRow(QLabel('Стоимость:'), self.line_product_cost)
         form_layout.addRow(QLabel('Описание:'), self.line_product_description)
@@ -137,7 +138,7 @@ class ProductForm(QWidget):
                 destination = os.path.abspath('./Товары салона красоты')
                 shutil.copy(self.imagePath, destination)
 
-            product_fields = [self.line_product_name.text(), float(self.line_product_cost.text()),
+            product_fields = [self.line_product_name.text(), float(self.line_product_cost.text().replace(',', '.')),
                               self.line_product_description.toPlainText(), self.product_main_photo,
                               self.line_product_is_active.isChecked(), self.line_product_manufacturer.currentText(),
                               self.line_product_uuid.text()]
@@ -146,9 +147,10 @@ class ProductForm(QWidget):
                 create_update(
                     f"INSERT INTO Product(Title, Cost, Description, MainImagePath, IsActive, ManufacturerID, UUID) \
                     VALUES(?,?,?,?,?,?,?)", product_fields)
-                self.product_window.show_product_cards("select * from Product")
             if self.type_form == TYPES_FORM[1]:
-                pass
+                create_update(f"UPDATE Product SET Title = ?,Cost = ?,Description = ?,MainImagePath = ?,\
+                              IsActive = ?,ManufacturerID = ?,UUID = ?\
+                              WHERE Title = '{self.product_name}'", product_fields)
             self.cancel_form()
         except Exception as e:
             print(e)
