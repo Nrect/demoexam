@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QScrollArea, QWidget, QGridLayout, QPus
 
 from ui.product_card import ElementCard
 from ui.product_add_eddit import ProductForm
+from ui.sale_history import HistoryWindow
 
 from utils.helpers import set_window_style, execute_query, TYPES_FORM, get_all_manufactures
 
@@ -34,9 +35,6 @@ def get_attached_products(product: str) -> list:
     attached_products = res
     attached_products_list = [x[0] for x in attached_products]
     return attached_products_list
-
-
-print(get_attached_products('Антивозрастная коллекция Освежающий тоник Цветочный'))
 
 
 class ProductWindow(QMainWindow):
@@ -93,10 +91,15 @@ class ProductWindowWidget(QWidget):
         self.btn_add.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         self.btn_add.clicked.connect(self.open_product_form)
 
+        self.btn_history = QPushButton('История продаж')
+        self.btn_history.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+        self.btn_history.clicked.connect(self.open_sale_history)
+
         btn_container.addWidget(self.btn_cost_decrease, 0, 0)
         btn_container.addWidget(self.btn_cost_increase, 0, 1)
         btn_container.addWidget(self.btn_cancel, 0, 2)
-        btn_container.addWidget(self.btn_add, 1, 0, 1, 3)
+        btn_container.addWidget(self.btn_history, 1, 2)
+        btn_container.addWidget(self.btn_add, 1, 0, 1, 2)
 
         # Поиск
         self.searchbar = QLineEdit()
@@ -158,7 +161,8 @@ class ProductWindowWidget(QWidget):
             card = ElementCard(product[0], self.product_attached_products_count(product[0]),
                                str(int(product[1])) + ' руб.',
                                product[3], self.product_photos(product[0]),
-                               'Активно' if product[4] else 'Не активен', product[2], product[6], product[5])
+                               'Активно' if product[4] else 'Не активен', product[2], product[6], product[5],
+                               get_attached_products(product[0]))
             column += 1
             self.card_layout.addWidget(card, row, column)
             self.title_list.append(product[0])
@@ -217,11 +221,14 @@ class ProductWindowWidget(QWidget):
         self.btn_cost_decrease.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
         self.btn_cost_increase.setStyleSheet('background-color: rgb(225, 228, 255);color:black;')
 
-    # TODO Сделать добавлление твоаров
     def open_product_form(self):
         self.product_form = ProductForm(TYPES_FORM[0], '', '', '', '', '', '', '')
         self.product_form.setWindowTitle('Добавить товар')
         self.product_form.show_window()
+
+    def open_sale_history(self):
+        self.history_window = HistoryWindow()
+        self.history_window.show_history()
 
     def update_display(self):
         search_text = self.searchbar.text()

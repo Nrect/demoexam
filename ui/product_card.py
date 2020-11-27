@@ -10,14 +10,13 @@ from utils.helpers import show_message, TYPES_FORM, delete_query
 
 
 class ElementCard(QWidget):
-    def __init__(self, title, attached_products, cost, main_image, product_photos, is_active, description, uuid,
-                 manufacturer
-                 ):
+    def __init__(self, title, attached_products_count, cost, main_image, product_photos, is_active, description, uuid,
+                 manufacturer, attached_products):
         super().__init__()
         self.image_number = 0
 
         self.product_title = title
-        self.product_attached_products = attached_products
+        self.product_attached_products_count = attached_products_count
         self.product_cost = cost
         self.product_main_image = main_image
         self.product_photos = product_photos
@@ -25,6 +24,7 @@ class ElementCard(QWidget):
         self.product_description = description
         self.product_uuid = uuid
         self.product_manufacturer = manufacturer
+        self.product_attached_products = attached_products
 
         self.frame_color = QtCore.Qt.gray
 
@@ -70,7 +70,7 @@ class ElementCard(QWidget):
 
         hbox.addWidget(self.radio)
 
-        self.name = QLabel(self.product_title + f"({self.product_attached_products})")
+        self.name = QLabel(self.product_title + f"({self.product_attached_products_count})")
         self.name.setWordWrap(True)
         self.price = QLabel(self.product_cost)
         self.price.setWordWrap(True)
@@ -148,7 +148,8 @@ class ElementCard(QWidget):
         try:
             self.product_form_window = ProductForm(TYPES_FORM[1], self.product_main_image, self.product_title,
                                                    self.product_cost, self.product_description, self.product_is_active,
-                                                   self.product_uuid, self.product_manufacturer)
+                                                   self.product_uuid, self.product_manufacturer,
+                                                   self.product_attached_products)
             self.product_form_window.setWindowTitle('Редактировать товар')
         except Exception as e:
             print(e)

@@ -11,7 +11,8 @@ from utils.helpers import TYPES_FORM, get_all_manufactures, uuid_generator, show
 
 
 class ProductForm(QWidget):
-    def __init__(self, type_form, main_photo, name, cost, description, is_active, uuid, manufacturer):
+    def __init__(self, type_form, main_photo, name, cost, description, is_active, uuid, manufacturer,
+                 attached_products):
         super().__init__()
         set_window_style(self)
         self.type_form = type_form
@@ -24,6 +25,8 @@ class ProductForm(QWidget):
         self.product_is_active = is_active
         self.product_uuid = uuid
         self.product_manufacturer = manufacturer
+        self.product_attached_products = attached_products
+        self.setWindowModality(2)
         self.init_ui()
 
         # def __new__(cls):
@@ -32,6 +35,7 @@ class ProductForm(QWidget):
         #     return cls.instance
 
     def init_ui(self):
+        print(self.product_attached_products)
         self.imagePath = ''
         main_layout = QGridLayout()
         form_layout = QFormLayout()
@@ -90,7 +94,6 @@ class ProductForm(QWidget):
                 self.line_product_is_active.setChecked(False)
 
             self.line_product_manufacturer.setCurrentText(self.product_manufacturer)
-
 
         # Добавление элементов
         form_layout.addRow(QLabel('Фото:'), self.line_product_main_photo)
@@ -153,7 +156,7 @@ class ProductForm(QWidget):
                               WHERE Title = '{self.product_name}'", product_fields)
             self.cancel_form()
         except Exception as e:
-            print(e)
+            show_error_message(e)
 
     def cancel_form(self):
         self.close()
